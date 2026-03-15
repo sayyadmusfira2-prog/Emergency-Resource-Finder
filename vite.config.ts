@@ -1,62 +1,8 @@
-node_modules
-dist
-.git
-.gitignore
-README.md
-.env
-.env.local
-.env.development
-.env.test
-.env.production
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.DS_Store
-.vscode
-.idea
-*.swp
-*.swo
-*~
-.cursor
-coverage
-.nyc_output
-.eslintcache
-*.log
-*.lock
-*.tmp
-*.tmp.*
-log.txt
+import { defineConfig } from 'vite'
 
-.DS_Store
-node_modules
-**/node_modules/**
-build
-data
-.env
-load-ids.txt
-
-server
-tmp
-types
-.git
-.gitignore
-dist
-service
-tests
-fixtures-pages
-fixtures-apps
-
-# Netlify
-.netlify
-packages/ml-air/lib
-packages/ml-air/bin
-packages/ml-air/project
-packages/ml-air/share
-packages/ml-air/random_forest_classification/
-packages/ml-air/__pycache__/
-packages/ml-air/app/__pycache__/
-packages/vcp-common/native-bridge/build
-packages/vcp-common/_tests_/dataset-ranking.csv
-node_modules/
-Dockerfile
-.gitignore
+export default defineConfig({
+  server: {
+    port: 5173,
+    host: '0.0.0.0'
+  }
+})
