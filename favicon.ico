@@ -1,0 +1,308 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  AlertCircle,
+  MapPin,
+  Search,
+  Hospital,
+  Droplet,
+  Ambulance,
+  Shield,
+  MapPinIcon,
+} from "lucide-react";
+import Layout from "@/components/Layout";
+
+const EMERGENCY_CATEGORIES = [
+  {
+    id: "hospitals",
+    name: "Hospitals",
+    icon: Hospital,
+    color: "bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30",
+    iconColor: "text-red-600 dark:text-red-400",
+  },
+  {
+    id: "blood-banks",
+    name: "Blood Banks",
+    icon: Droplet,
+    color: "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30",
+    iconColor: "text-blue-600 dark:text-blue-400",
+  },
+  {
+    id: "ambulance",
+    name: "Ambulance Services",
+    icon: Ambulance,
+    color: "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30",
+    iconColor: "text-yellow-600 dark:text-yellow-400",
+  },
+  {
+    id: "police",
+    name: "Police Stations",
+    icon: Shield,
+    color: "bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30",
+    iconColor: "text-purple-600 dark:text-purple-400",
+  },
+];
+
+export default function Index() {
+  const [location, setLocation] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [detectedLocation, setDetectedLocation] = useState<string | null>(null);
+
+  const handleDetectLocation = () => {
+    setLoading(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setDetectedLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          setLoading(false);
+        },
+        () => {
+          setLoading(false);
+          alert("Unable to detect your location. Please enable location access.");
+        }
+      );
+    } else {
+      setLoading(false);
+      alert("Geolocation is not supported by your browser.");
+    }
+  };
+
+  const handleEmergencySearch = (category: string) => {
+    if (!location.trim()) {
+      alert("Please enter a location or detect your location first.");
+      return;
+    }
+    window.location.href = `/results?location=${encodeURIComponent(location)}&category=${category}`;
+  };
+
+  return (
+    <Layout>
+      {/* Hero Section with SOS Button */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 py-12 md:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+                  Emergency Help,
+                  <span className="text-primary"> Instantly</span>
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-md">
+                  Find hospitals, blood banks, ambulances, and police stations near you in seconds. When every moment counts, we're here to help.
+                </p>
+              </div>
+
+              {/* Search Section */}
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      placeholder="Enter city or location..."
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="w-full px-4 py-3 pl-10 rounded-lg border border-border bg-white dark:bg-slate-800 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    />
+                    <MapPin className="absolute left-3 top-3.5 w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <button
+                    onClick={handleDetectLocation}
+                    disabled={loading}
+                    className="px-6 py-3 bg-secondary text-secondary-foreground rounded-lg font-medium hover:opacity-90 transition-all disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {loading ? "Detecting..." : "Detect"}
+                  </button>
+                </div>
+                {detectedLocation && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <MapPinIcon className="w-4 h-4 text-primary" />
+                    Location detected: {detectedLocation}
+                  </p>
+                )}
+
+                {/* Quick Links */}
+                <div className="flex gap-2 pt-2">
+                  <Link
+                    to="/map"
+                    className="text-sm text-primary hover:underline no-underline font-medium"
+                  >
+                    📍 View Interactive Map
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Right - SOS Button */}
+            <div className="flex items-center justify-center lg:justify-end">
+              <button
+                onClick={() => {
+                  if (!location.trim()) {
+                    alert("Please enter a location first for nearest services.");
+                    return;
+                  }
+                  window.location.href = `/results?location=${encodeURIComponent(location)}&emergency=true`;
+                }}
+                className="group relative w-48 h-48 flex items-center justify-center"
+              >
+                <div className="absolute inset-0 bg-primary rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-300" />
+                <div className="absolute inset-0 bg-primary rounded-full animate-scale-pulse" />
+                <div className="relative bg-primary hover:bg-red-700 text-white rounded-full w-40 h-40 flex items-center justify-center shadow-emergency hover:shadow-emergency-lg transition-all duration-300 transform group-hover:scale-110">
+                  <div className="text-center">
+                    <AlertCircle className="w-16 h-16 mx-auto mb-2" />
+                    <div className="text-2xl font-bold">SOS</div>
+                    <div className="text-xs mt-1 opacity-90">Emergency</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-16 md:py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Find Emergency Services
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Select a category to find the nearest emergency resource in your area
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {EMERGENCY_CATEGORIES.map((category) => {
+              const IconComponent = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => handleEmergencySearch(category.id)}
+                  className={`${category.color} p-8 rounded-xl transition-all duration-300 transform hover:scale-105 text-left group cursor-pointer border-2 border-transparent hover:border-primary/20`}
+                >
+                  <div className="flex flex-col h-full">
+                    <IconComponent
+                      className={`w-12 h-12 mb-4 group-hover:scale-110 transition-transform ${category.iconColor}`}
+                    />
+                    <h3 className="text-xl font-bold text-foreground">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Find nearby {category.name.toLowerCase()}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 md:py-24 bg-card border-t border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Why Use Emergency Finder?
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Fast & Accurate",
+                description:
+                  "Get real-time information about emergency services nearest to you with precise locations and contact details.",
+              },
+              {
+                title: "Location Detection",
+                description:
+                  "Automatic location detection ensures you find the closest services without manually entering your address.",
+              },
+              {
+                title: "Multiple Services",
+                description:
+                  "Access hospitals, blood banks, ambulances, and police stations all in one convenient app.",
+              },
+              {
+                title: "Map Integration",
+                description:
+                  "View emergency services on an interactive map to see exact locations and distances.",
+              },
+              {
+                title: "Dark Mode",
+                description:
+                  "Easy on the eyes with a built-in dark mode for nighttime emergencies.",
+              },
+              {
+                title: "Contact Info",
+                description:
+                  "Direct phone numbers and addresses for every emergency service listing.",
+              },
+            ].map((feature, i) => (
+              <div
+                key={i}
+                className="p-6 rounded-lg bg-background border border-border hover:border-primary/30 transition-all"
+              >
+                <h3 className="font-bold text-lg text-foreground mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground text-sm">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Tips Section */}
+      <section className="py-16 md:py-24 bg-gradient-to-r from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-12">
+            In Case of Emergency
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-white dark:bg-card p-8 rounded-lg border border-border">
+              <h3 className="text-xl font-bold text-foreground mb-4">Medical Emergencies</h3>
+              <ul className="space-y-3 text-muted-foreground">
+                <li className="flex gap-3">
+                  <span className="text-primary font-bold">1.</span>
+                  <span>Use the SOS button for nearest emergency hospitals</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-primary font-bold">2.</span>
+                  <span>Check for blood banks if needed</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-primary font-bold">3.</span>
+                  <span>Call ambulance services immediately</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white dark:bg-card p-8 rounded-lg border border-border">
+              <h3 className="text-xl font-bold text-foreground mb-4">Crime or Safety Issues</h3>
+              <ul className="space-y-3 text-muted-foreground">
+                <li className="flex gap-3">
+                  <span className="text-primary font-bold">1.</span>
+                  <span>Search for nearest police stations</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-primary font-bold">2.</span>
+                  <span>Get direct contact information</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-primary font-bold">3.</span>
+                  <span>Call or visit immediately</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </Layout>
+  );
+}
